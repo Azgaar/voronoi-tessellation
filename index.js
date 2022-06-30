@@ -1,13 +1,16 @@
-const svg = d3.select("svg").on("touchmove mousemove", moved);
+const svg = d3.select("svg");
 const width = window.innerWidth;
 const height = window.innerHeight;
 
-const sites = d3.range(100).map(d => [Math.random() * width, Math.random() * height]);
+const offScreen = 50;
+const extentMin = [-offScreen, -offScreen];
+const extentMax = [width + offScreen, height + offScreen];
+const voronoi = d3.voronoi().extent([extentMin, extentMax]);
 
-const voronoi = d3.voronoi().extent([
-  [-1, -1],
-  [width + 1, height + 1]
-]);
+const POINTS = 100;
+const trancendentals = d3.range(POINTS);
+const randomSites = randomizePoints(trancendentals);
+let sites = voronoi(randomSites).polygons().map(d3.polygonCentroid);
 
 let polygon = svg
   .append("g")
@@ -37,11 +40,6 @@ let site = svg
   .attr("r", 2.5)
   .call(redrawSite);
 
-function moved() {
-  sites[0] = d3.mouse(this);
-  redraw();
-}
-
 function redraw() {
   const diagram = voronoi(sites);
   polygon = polygon.data(diagram.polygons()).call(redrawPolygon);
@@ -66,3 +64,46 @@ function redrawLink(link) {
 function redrawSite(site) {
   site.attr("cx", d => d[0]).attr("cy", d => d[1]);
 }
+
+const RELAXITION_RATE = 0.01;
+const FOCUS_RATE = 0.0001;
+const RANDOMIZE_TIMEOUT = 100;
+let goal = sites.slice();
+let randomizedAt = 0;
+
+function randomizePoints(trancendentals) {
+  return trancendentals.map(randomizePoint);
+}
+
+function randomizePoint() {
+  return [Math.random() * width, Math.random() * height];
+}
+
+function step(time) {
+  if (time - randomizedAt > RANDOMIZE_TIMEOUT) {
+    const pointToUpdate = Math.floor(Math.random() * POINTS);
+    goal[pointToUpdate] = randomizePoint();
+    randomizedAt = time;
+  }
+
+  sites = voronoi(sites)
+    .polygons()
+    .map((polygon, index) => {
+      const [x0, y0] = sites[index];
+      const [goalX, goalY] = goal[index];
+      const [cx, cy] = d3.polygonCentroid(polygon);
+
+      const x1 = x0 + (cx - x0) * RELAXITION_RATE;
+      const y1 = y0 + (cy - y0) * RELAXITION_RATE;
+
+      const x2 = x1 + (goalX - x1) * FOCUS_RATE;
+      const y2 = y1 + (goalY - y1) * FOCUS_RATE;
+
+      return [x2, y2];
+    });
+
+  redraw();
+  requestAnimationFrame(step);
+}
+
+requestAnimationFrame(step);

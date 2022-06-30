@@ -1,7 +1,7 @@
 {
   "name": "voronoi-tessellation",
   "version": "1.0.0",
-  "description": "Voronoi tessellation background",
+  "description": "Voronoi tessellation to be used as iframe background",
   "main": "index.js",
   "author": "Mike Bostock’s, edite from Azgaar",
   "license": "MIT"

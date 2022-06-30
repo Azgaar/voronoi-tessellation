@@ -1,6 +1,12 @@
+:root {
+  --polyhon-color: #00bcd4;
+  --site-color: #ffffff10;
+  --link-color: #ffffff05;
+}
+
 body {
-  background-color: #f5f5f5;
   margin: 0;
+  background-color: #181818;
 }
 
 svg {
@@ -8,17 +14,25 @@ svg {
   inset: 0;
 }
 
+.sites {
+  fill: var(--site-color);
+  stroke: none;
+}
+
 .links {
-  stroke: #000;
-  stroke-opacity: 0.2;
+  stroke: var(--link-color);
 }
 
 .polygons {
   fill: none;
-  stroke: #000;
+  stroke: var(--polyhon-color);
+  stroke-opacity: 0.3;
+  animation: color-hue-animation 20s infinite;
 }
 
-.sites {
-  fill: #000;
-  stroke: #fff;
+@keyframes color-hue-animation {
+  0% { filter: hue-rotate(0deg); }
+  50% { filter: hue-rotate(100deg); }
+  100% { filter: hue-rotate(0deg); }
 }
+
